@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/logs.css";
-import Register from "../../components/logs/register.jsx";
-import Login from "../../components/logs/login.jsx";
+import Register from "../../components/logsComponent/register.jsx";
+import Login from "../../components/logsComponent/login.jsx";
 
 function LogsPage() {
   const [isActiveRegister, setIsActiveRegister] = useState("");

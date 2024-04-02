@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { RiEyeCloseLine, RiEyeLine } from "react-icons/ri";
+import axiosInstance from "../../configs/axios-conf";
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
@@ -33,7 +34,17 @@ function Login() {
     }
 
     if (Object.keys(errors).length === 0) {
-      alert(`Form submitted successfully! (This is just a simulation)`);
+      axiosInstance
+        .post("/auth/login", {
+          email: email,
+          password: password,
+        })
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((errors) => {
+          console.log(errors);
+        });
     } else {
       setErrors(errors);
     }
