@@ -1,13 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { RiEyeCloseLine, RiEyeLine } from "react-icons/ri";
 import axiosInstance from "../../configs/axios-conf";
+import { useAuth } from "../../provider/authContext";
+import { Checkbox } from "antd";
+
 function Login() {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
+  const navigate = useNavigate();
+  const { setToken } = useAuth();
   const [errors, setErrors] = useState({});
+  const [failLogin, setFailLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false); // State để lưu trạng thái của checkbox
+
+  useEffect(() => {
+    // Kiểm tra nếu đã lưu token trong localStorage và rememberMe được check
+    const storedToken = localStorage.getItem("accessToken");
+    if (storedToken && rememberMe) {
+      setToken(storedToken); // Set token từ localStorage
+      navigate("/home");
+    }
+  }, [rememberMe, setToken, navigate]);
+
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData({ ...formData, [name]: value });
@@ -17,6 +35,10 @@ function Login() {
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  const handleRememberMe = () => {
+    setRememberMe(!rememberMe); // Toggle trạng thái của checkbox
   };
 
   const handleFormSubmit = (event) => {
@@ -40,10 +62,18 @@ function Login() {
           password: password,
         })
         .then((response) => {
-          console.log(response);
+          const accessToken = response.data.data.accesstoken;
+          setToken(accessToken);
+
+          if (rememberMe) {
+            localStorage.setItem("token", accessToken);
+          }
+
+          navigate("/home");
         })
-        .catch((errors) => {
-          console.log(errors);
+        .catch((error) => {
+          console.log(error);
+          setFailLogin(true);
         });
     } else {
       setErrors(errors);
@@ -82,12 +112,19 @@ function Login() {
               cursor: "pointer",
             }}
             onClick={togglePasswordVisibility}
+            name="togglePasswordVisibility"
+            tabIndex="0"
           >
             {showPassword ? <RiEyeLine /> : <RiEyeCloseLine />}
           </span>
         </div>
         {errors.password && <p className="error-message">{errors.password}</p>}
+        <Checkbox onChange={handleRememberMe}>Remember me</Checkbox>{" "}
+        {/* Sử dụng onChange để xử lý sự kiện */}
         <a href="#">Forget Your Password?</a>
+        {failLogin && (
+          <p className="error-message">Email or password is incorrect!</p>
+        )}
         <button type="submit">Sign In</button>
       </form>
     </div>

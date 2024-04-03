@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { Avatar, Layout, Dropdown, Menu, Drawer } from "antd";
+import { Avatar, Layout, Dropdown, Menu } from "antd";
 import { UserOutlined } from "@ant-design/icons";
 import { PiChatCircleTextThin, PiAddressBookThin } from "react-icons/pi";
 import { LuListTodo } from "react-icons/lu";
 import { CiCloudOn, CiSettings } from "react-icons/ci";
 import { PiBagSimpleBold } from "react-icons/pi";
+import InfoAccountModal from "../modal/info_account";
 
 const { Sider } = Layout;
 
@@ -86,13 +87,23 @@ const LeftSider = () => {
     </Menu>
   );
 
+  const iconStyle = {
+    textAlign: "center",
+    height: "4rem",
+    fontSize: "25px",
+    border: "white",
+  };
+
   return (
     <>
       <Sider
-        width={"3.5%"}
-        style={{ color: "white", backgroundColor: "#0091ff" }}
+        width={"70"}
+        style={{
+          color: "white",
+          backgroundColor: "#0091ff",
+        }}
       >
-        <div style={{ height: "75%" }}>
+        <div style={{ height: "65%" }}>
           <div style={{ textAlign: "center", margin: "30px 0" }}>
             <Dropdown
               trigger={["click"]}
@@ -108,101 +119,44 @@ const LeftSider = () => {
               />
             </Dropdown>
           </div>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
-          >
+          <div className="leftSiderIcon" style={iconStyle}>
             <PiChatCircleTextThin style={{ marginTop: "30%" }} />
           </div>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
-          >
+          <div className="leftSiderIcon" style={iconStyle}>
             <PiAddressBookThin style={{ marginTop: "30%" }} />
           </div>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
-          >
+          <div className="leftSiderIcon" style={iconStyle}>
             <LuListTodo style={{ marginTop: "30%" }} />
           </div>
         </div>
 
-        <div style={{ height: "15%" }}>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
+        {/* <div style={{ height: "15%" }}> */}
+        <div className="leftSiderIcon" style={iconStyle}>
+          <CiCloudOn style={{ marginTop: "30%" }} />
+        </div>
+        <div className="leftSiderIcon" style={iconStyle}>
+          <PiBagSimpleBold style={{ marginTop: "30%" }} />
+        </div>
+        <div className="leftSiderIcon" style={iconStyle}>
+          <Dropdown
+            trigger={["click"]}
+            overlay={settingMenu}
+            placement="bottomLeft"
+            visible={isSettingMenuVisible}
+            onVisibleChange={setIsSettingMenuVisible}
           >
-            <CiCloudOn style={{ marginTop: "30%" }} />
-          </div>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
-          >
-            <PiBagSimpleBold style={{ marginTop: "30%" }} />
-          </div>
-          <div
-            className="leftSiderIcon"
-            style={{
-              textAlign: "center",
-              height: "4rem",
-              fontSize: "25px",
-              border: "white",
-            }}
-          >
-            <Dropdown
-              trigger={["click"]}
-              overlay={settingMenu}
-              placement="bottomLeft"
-              visible={isSettingMenuVisible}
-              onVisibleChange={setIsSettingMenuVisible}
-            >
-              <CiSettings
-                style={{ marginTop: "30%" }}
-                onClick={() => setIsSettingMenuVisible(!isSettingMenuVisible)}
-              />
-            </Dropdown>
-          </div>
+            <CiSettings
+              style={{ marginTop: "30%" }}
+              onClick={() => setIsSettingMenuVisible(!isSettingMenuVisible)}
+            />
+          </Dropdown>
         </div>
       </Sider>
-      <Drawer
-        title="Thông tin tài khoản"
-        placement="right"
-        closable={false}
-        onClose={() => setVisibleDrawer(false)}
+
+      <InfoAccountModal
         visible={visibleDrawer}
-      >
-        <p>Thông tin cá nhân</p>
-        <p>      .</p>
-        <p>Giới tính</p>
-        <p>Ngày sinh</p>
-        <button>Cập nhật</button>
-      </Drawer>
+        onCancel={() => setVisibleDrawer(false)}
+      />
     </>
   );
 };
