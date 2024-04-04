@@ -7,18 +7,33 @@ import { CiCloudOn, CiSettings } from "react-icons/ci";
 import { PiBagSimpleBold } from "react-icons/pi";
 import InfoAccountModal from "../modal/info_account";
 
+import { useAuth } from "../../provider/authContext";
+
 const { Sider } = Layout;
 
 const LeftSider = () => {
+  let { isAuthenticated, logout, user } = useAuth();
   const [isAvatarMenuVisible, setIsAvatarMenuVisible] = useState(false);
   const [isSettingMenuVisible, setIsSettingMenuVisible] = useState(false);
   const [visibleDrawer, setVisibleDrawer] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null); // Khai báo và khởi tạo imageUrl
 
   const handleMenuClick = (e) => {
-    if (e.key === "5" || e.key === "2") {
-      setVisibleDrawer(true);
+    switch (e.key) {
+      case "4":
+      case "10":
+        logout();
+        break;
+      case "2":
+      case "5":
+        setVisibleDrawer(true);
+        break;
+      default:
+        break;
     }
   };
+
+  user = JSON.parse(user);
 
   const avatarMenu = (
     <Menu onClick={handleMenuClick}>
@@ -94,7 +109,38 @@ const LeftSider = () => {
     border: "white",
   };
 
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      if (!beforeUpload(file)) {
+        return;
+      }
+      getBase64(file, (url) => {
+        setImageUrl(url);
+      });
+    }
+  };
+
+  const beforeUpload = (file) => {
+    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
+    if (!isJpgOrPng) {
+      message.error("You can only upload JPG/PNG file!");
+    }
+    const isLt2M = file.size / 1024 / 1024 < 2;
+    if (!isLt2M) {
+      message.error("Image must smaller than 2MB!");
+    }
+    return isJpgOrPng && isLt2M;
+  };
+
+  const getBase64 = (img, callback) => {
+    const reader = new FileReader();
+    reader.addEventListener("load", () => callback(reader.result));
+    reader.readAsDataURL(img);
+  };
+
   return (
+    // axiosInstance.get("/auth/updateProfile", updateProfile).then((response) => {});
     <>
       <Sider
         width={"70"}
@@ -114,7 +160,13 @@ const LeftSider = () => {
             >
               <Avatar
                 size={55}
-                icon={<UserOutlined />}
+                icon={
+                  user && user.photoUrl ? (
+                    <Avatar src={user.photoUrl} alt="avatar" />
+                  ) : (
+                    <UserOutlined />
+                  )
+                }
                 onClick={() => setIsAvatarMenuVisible(!isAvatarMenuVisible)}
               />
             </Dropdown>
@@ -130,7 +182,6 @@ const LeftSider = () => {
           </div>
         </div>
 
-        {/* <div style={{ height: "15%" }}> */}
         <div className="leftSiderIcon" style={iconStyle}>
           <CiCloudOn style={{ marginTop: "30%" }} />
         </div>

@@ -1,15 +1,59 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input, Space, Typography, Button } from "antd";
-
+import { useAuth } from "../../provider/authContext";
+import axiosInstance from "../../configs/axios-conf";
+import { useNavigate } from "react-router-dom";
 const { Title } = Typography;
 
 const Verify = () => {
+  const { setUser, setToken } = useAuth();
+  const [isError, setIsError] = useState(false);
+  const [code, setCode] = useState("");
+
   const onChange = (text) => {
-    console.log("onChange:", text);
+    setCode(text);
   };
 
   const sharedProps = {
     onChange,
+  };
+
+  const onSubmit = () => {
+    let user = localStorage.getItem("user");
+    const verifyCode = localStorage.getItem("verifyCode");
+    user = JSON.parse(user.toString());
+
+    const infoPost = {
+      fullname: user.fullname,
+      email: user.email,
+      password: user.password,
+      photoUrl: "",
+      dateOfBirth: Date.now(),
+      gender: "male",
+    };
+
+    if (code === verifyCode) {
+      setUser(localStorage.getItem("user"));
+      axiosInstance
+        .post("/auth/register", infoPost)
+        .then((response) => {
+          const accessToken = response.data.data.accesstoken;
+          setToken(accessToken);
+          setUser(response.data.data);
+          localStorage.setItem("token", accessToken);
+          setIsError(false);
+          localStorage.removeItem("user");
+          localStorage.removeItem("verifyCode");
+          localStorage.removeItem("code");
+          localStorage.removeItem("rememberMe");
+          navigate("/home");
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    } else {
+      setIsError(true);
+    }
   };
 
   const formStyle = {
@@ -39,12 +83,16 @@ const Verify = () => {
         <Space direction="vertical" size="middle" align="center">
           <Title level={5}>Please enter the code here!</Title>
           <Input.OTP
+            value={code}
             length={4}
             formatter={(str) => str.toUpperCase()}
-            {...sharedProps}
-            style={{ borderRadius: "4px" }} // Bo tròn các cạnh của input
+            onChange={onChange}
+            style={{ borderRadius: "4px" }}
           />
-          <Button type="primary">Submit</Button>
+          {isError && <p className="error-message">{"Code incorrect"}</p>}
+          <Button type="primary" onClick={onSubmit}>
+            Submit
+          </Button>
         </Space>
       </div>
     </div>

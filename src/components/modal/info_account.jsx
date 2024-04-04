@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Modal,
   Form,
@@ -12,6 +12,8 @@ import {
 } from "antd";
 import { UserOutlined, EditOutlined, CameraOutlined } from "@ant-design/icons";
 import styled from "styled-components";
+import { useAuth } from "../../provider/authContext";
+import axiosInstance from "../../configs/axios-conf";
 
 const AvatarImage = styled.img`
   width: 100%;
@@ -31,6 +33,9 @@ const InfoAccountModal = ({ visible, onCancel }) => {
   const hiddenFileInput = useRef(null);
   const [previewImage, setPreviewImage] = useState("");
   const [previewOpen, setPreviewOpen] = useState(false);
+  let { user, setUser, setToken } = useAuth();
+
+  user = JSON.parse(user);
 
   const handleImageChange = (event) => {
     const file = event.target.files[0];
@@ -101,6 +106,27 @@ const InfoAccountModal = ({ visible, onCancel }) => {
     </Button>
   );
 
+  const handleSave = async () => {
+    try {
+      // Gọi API để cập nhật ảnh đại diện
+      await axiosInstance.post("/auth/updatePhotoUrl", {
+        email: user.email,
+        imageUrl: imageUrl,
+      });
+      // Nếu cập nhật thành công, cập nhật ảnh đại diện trong state và đóng modal
+      setUser({ ...user, photoUrl: imageUrl });
+
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...user, photoUrl: imageUrl })
+      );
+      onCancel();
+      message.success("Avatar updated successfully!");
+    } catch (error) {
+      message.error("Failed to update avatar. Please try again later.");
+    }
+  };
+
   return (
     <Modal
       title={<div style={{ textAlign: "center" }}>Thông tin tài khoản</div>}
@@ -123,8 +149,11 @@ const InfoAccountModal = ({ visible, onCancel }) => {
                 <Avatar
                   size={75}
                   icon={
-                    imageUrl ? (
-                      <AvatarImage src={imageUrl} alt="avatar" />
+                    imageUrl || user.photoUrl ? (
+                      <AvatarImage
+                        src={imageUrl ? imageUrl : user.photoUrl}
+                        alt="avatar"
+                      />
                     ) : (
                       <UserOutlined />
                     )
@@ -133,6 +162,14 @@ const InfoAccountModal = ({ visible, onCancel }) => {
                 {imageUrl ? null : <div className="upload-text"></div>}
               </div>
               {uploadButton}
+              <Button
+                type="default"
+                htmlType="submit"
+                style={{ marginLeft: 10 }}
+                onClick={handleSave}
+              >
+                Save
+              </Button>
               <input
                 type="file"
                 accept="image/*"
@@ -148,21 +185,30 @@ const InfoAccountModal = ({ visible, onCancel }) => {
             style={{ marginBottom: 20 }}
             disabled={componentDisabled}
           >
-            <Input disabled={componentDisabled} />
+            <Input value={user.fullname} disabled={componentDisabled} />
           </Form.Item>
 
           <Form.Item style={{ marginBottom: 20 }} disabled={componentDisabled}>
             <CenteredRow>
               <Form.Item label="Giới tính" style={{ marginBottom: 0 }}>
                 <Radio.Group disabled={componentDisabled}>
-                  <Radio name="gender" value="male"> Male </Radio>
-                  <Radio name="gender" value="female"> Female </Radio>
+                  <Radio name="gender" value="male">
+                    {" "}
+                    Male{" "}
+                  </Radio>
+                  <Radio name="gender" value="female">
+                    {" "}
+                    Female{" "}
+                  </Radio>
                 </Radio.Group>
               </Form.Item>
             </CenteredRow>
             <CenteredRow>
               <Form.Item label="Ngày sinh" style={{ marginBottom: 0 }}>
-                <DatePicker disabled={componentDisabled} />
+                <DatePicker
+                  value={Date.parse(user.DateOfBirth)}
+                  disabled={componentDisabled}
+                />
               </Form.Item>
             </CenteredRow>
           </Form.Item>
@@ -170,6 +216,9 @@ const InfoAccountModal = ({ visible, onCancel }) => {
           <Form.Item wrapperCol={{ offset: 6, span: 16 }}>
             <Button icon={<EditOutlined />} onClick={toggleFormDisable}>
               {componentDisabled ? "Enable Form" : "Disable Form"}
+            </Button>
+            <Button type="default" htmlType="submit" style={{ marginLeft: 10 }}>
+              Save
             </Button>
           </Form.Item>
         </Form>

@@ -16,6 +16,7 @@ function Login() {
   const [failLogin, setFailLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false); // State để lưu trạng thái của checkbox
+  const { setUser } = useAuth({});
 
   useEffect(() => {
     // Kiểm tra nếu đã lưu token trong localStorage và rememberMe được check
@@ -67,8 +68,9 @@ function Login() {
 
           if (rememberMe) {
             localStorage.setItem("token", accessToken);
+            localStorage.setItem("user", JSON.stringify(response.data.data));
           }
-
+          setUser(response.data.data);
           navigate("/home");
         })
         .catch((error) => {
