@@ -70,7 +70,7 @@ function Login() {
             localStorage.setItem("token", accessToken);
             localStorage.setItem("user", JSON.stringify(response.data.data));
           }
-          setUser(response.data.data);
+          setUser(JSON.stringify(response.data.data));
           navigate("/home");
         })
         .catch((error) => {

@@ -33,7 +33,7 @@ const LeftSider = () => {
     }
   };
 
-  user = JSON.parse(user);
+  user = typeof user == Object ? user : JSON.parse(user);
 
   const avatarMenu = (
     <Menu onClick={handleMenuClick}>
